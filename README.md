@@ -1,81 +1,47 @@
 # Audition API
 
-The purpose of this Spring Boot application is to test general knowledge of SpringBoot, Java, Gradle etc. It is created for hiring needs of our company but can be used for other purposes.
+This is new ReadMe file. The original file has been kept in ReadMe_Original.md for reference.
 
-## Overarching expectations & Assessment areas
+## Following has been implemented.
 
-<pre>
-This is not a university test. 
-This is meant to be used for job applications and MUST showcase your full skillset. 
-<b>As such, PRODUCTION-READY code must be written and submitted. </b> 
-</pre>
+1. Google code style imported into IntelliJ and Save Actions set, while development.
+2. All TODOs has been resolved. All TODOs has been marked as resolved by changing TODO->TOD-Resolved for easy reference
+   of reviewer.
+3. Basic Authentication has been added.
 
-- clean, easy to understand code
-- good code structures
-- Proper code encapsulation
-- unit tests with minimum 80% coverage.
-- A Working application to be submitted.
-- Observability. Does the application contain Logging, Tracing and Metrics instrumentation?
-- Input validation.
-- Proper error handling.
-- Ability to use and configure rest template. We allow for half-setup object mapper and rest template
-- Not all information in the Application is perfect. It is expected that a person would figure these out and correct.
-  
-## Getting Started
+# Tech-Stack Used to build application:
 
-### Prerequisite tooling
+1. Java 17
+2. SpringBoot
+3. JUnit5
+4. Mockito
+5. Gradle
 
-- Any Springboot/Java IDE. Ideally IntelliJIdea.
-- Java 17
-- Gradle 8
-  
-### Prerequisite knowledge
+# Development Methodology / Assumptions:
 
-- Java
-- SpringBoot
-- Gradle
-- Junit
+1. TDD approach.
+2. 100% code coverage for Integration and Web layers.
+3. Upgrading dependencies versions is out of scope.
 
-### Importing Google Java codestyle into INtelliJ
+# References
+
+1. Some references from Baeldung
+
+# How to run this application
+
+* Clone the git repo using following command
 
 ```
-- Go to IntelliJ Settings
-- Search for "Code Style"
-- Click on the "Settings" icon next to the Scheme dropdown
-- Choose "Import -> IntelliJ Idea code style XML
-- Pick the file "google_java_code_style.xml" from root directory of the application
-__Optional__
-- Search for "Actions on Save"
-    - Check "Reformat Code" and "Organise Imports"
+cd ..
+git clone https://github.com/karwal/audition-api.git
 ```
 
----
-**NOTE** -
-It is  highly recommended that the application be loaded and started up to avoid any issues.
+This will create a folder audition-api in your current working directory.
 
----
+* Execute command:
 
-## Audition Application information
+``` cd audition-api ```
 
-This section provides information on the application and what the needs to be completed as part of the audition application.
+* Compile code using following command
 
-The audition consists of multiple TODO statements scattered throughout the codebase. The applicants are expected to:
-
-- Complete all the TODO statements.
-- Add unit tests where applicants believe it to be necessary.
-- Make sure that all code quality check are completed.
-- Gradle build completes sucessfully.
-- Make sure the application if functional.
-
-## Submission process
-Applicants need to do the following to submit their work: 
-- Clone this repository
-- Complete their work and zip up the working application. 
-- Applicants then need to send the ZIP archive to the email of the recruiting manager. This email be communicated to the applicant during the recruitment process. 
-
-  
----
-## Additional Information based on the implementation
-
-This section MUST be completed by applicants. It allows applicants to showcase their view on how an application can/should be documented. 
-Applicants can choose to do this in a separate markdown file that needs to be included when the code is committed. 
+``` gradle clean test build ```

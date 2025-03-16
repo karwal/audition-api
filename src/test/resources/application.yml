@@ -1,4 +1,6 @@
 spring:
+  application:
+    externalApiUrl: "https://jsonplaceholder.typicode.com"
   config:
     import: "optional:configserver:"
   autoconfigure:
