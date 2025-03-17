@@ -14,7 +14,7 @@ import lombok.Setter;
 @Setter(onMethod_ = @SuppressFBWarnings({"EI_EXPOSE_REP2", "EI_EXPOSE_REP"}))
 @Getter(onMethod_ = @SuppressFBWarnings({"EI_EXPOSE_REP2", "EI_EXPOSE_REP"}))
 @JsonInclude(Include.NON_NULL)
-@AllArgsConstructor
+@AllArgsConstructor(onConstructor_ = @SuppressFBWarnings({"EI_EXPOSE_REP2", "EI_EXPOSE_REP"}))
 @NoArgsConstructor
 public class AuditionPost {
 

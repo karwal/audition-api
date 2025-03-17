@@ -45,6 +45,10 @@ class AuditionIntegrationClientTest {
     @Value("${spring.application.externalApiUrl}")
     private String externalApiUrl;
 
+    private final static String RESOURCE_POST = "posts";
+    private final static String RESOURCE_COMMENT = "comments";
+    private final static String ERR_NOT_FOUND = "Not Found";
+
     /*
     Test the external API call for Get Posts
      */
@@ -80,7 +84,7 @@ class AuditionIntegrationClientTest {
     @Test
     public void testGetPostsExceptionScenario() {
         RestTemplate mockRestTemplate = mock(RestTemplate.class);
-        String url = String.format("%s/%s", externalApiUrl, "posts");
+        String url = String.format("%s/%s", externalApiUrl, RESOURCE_POST);
         when(mockRestTemplate.exchange(eq(url), eq(HttpMethod.GET), any(HttpEntity.class),
             any(ParameterizedTypeReference.class)))
             .thenThrow(new HttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"));
@@ -120,7 +124,7 @@ class AuditionIntegrationClientTest {
         RestTemplate restTemplateMock = spy(RestTemplate.class);
 
         when(restTemplateMock.getForEntity(externalApiUrl + "/posts/11", AuditionPost.class))
-            .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND, "Not Found"));
+            .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND, ERR_NOT_FOUND));
 
         AuditionIntegrationClient auditionIntegrationClient = new AuditionIntegrationClient(restTemplateMock);
         auditionIntegrationClient.setExternalApiUrl(externalApiUrl);
@@ -159,27 +163,28 @@ class AuditionIntegrationClientTest {
     public void testGetPostWithComments() {
         MockRestServiceServer mockServer = MockRestServiceServer.createServer(restTemplate);
         String postId = "100";
+
+        //Return the mock comments
         mockServer.expect(ExpectedCount.once(),
-                requestTo(String.format("%s/%s/%s/%s", externalApiUrl, "posts", postId, "comments")))
+                requestTo(getUrl(postId)))
             .andRespond(withSuccess(
-                "[\n"
-                    + "        {\n"
-                    + "            \"postId\": 100,\n"
-                    + "            \"id\": 1,\n"
-                    + "            \"name\": \"id labore ex et quam laborum\",\n"
-                    + "            \"email\": \"Eliseo@gardner.biz\",\n"
-                    + "            \"body\": \"laudantium enim quasi est quidem magnam voluptate ipsam eos\\ntempora quo necessitatibus\\ndolor quam autem quasi\\nreiciendis et nam sapiente accusantium\"\n"
-                    + "        },\n"
-                    + "        {\n"
-                    + "            \"postId\": 100,\n"
-                    + "            \"id\": 2,\n"
-                    + "            \"name\": \"quo vero reiciendis velit similique earum\",\n"
-                    + "            \"email\": \"Jayne_Kuhic@sydney.com\",\n"
-                    + "            \"body\": \"est natus enim nihil est dolore omnis voluptatem numquam\\net omnis occaecati quod ullam at\\nvoluptatem error expedita pariatur\\nnihil sint nostrum voluptatem reiciendis et\"\n"
-                    + "        }\n"
+                "["
+                    + "        {   \"postId\": 100,"
+                    + "            \"id\": 1,"
+                    + "            \"name\": \"id labore ex et quam laborum\","
+                    + "            \"email\": \"Eliseo@gardner.biz\","
+                    + "            \"body\": \"laudantium enim quasi est quidem magnamquam autente accusantium\""
+                    + "        },"
+                    + "        {   \"postId\": 100,"
+                    + "            \"id\": 2,"
+                    + "            \"name\": \"quo vero reiciendis velit similique earum\","
+                    + "            \"email\": \"Jayne_Kuhic@sydney.com\","
+                    + "            \"body\": \"est natus enim nihil est dolore omnxptem reiciendis et\""
+                    + "        }"
                     + "    ]",
                 MediaType.APPLICATION_JSON));
 
+        //Return the mock Post to put the comments into
         mockServer.expect(ExpectedCount.once(), requestTo(externalApiUrl + "/posts/100"))
             .andRespond(withSuccess(
                 "{  \"userId\": 1,"
@@ -208,10 +213,10 @@ class AuditionIntegrationClientTest {
     @Test
     public void testGetPostWithCommentsExceptionScenario404() {
         RestTemplate mockRestTemplate = mock(RestTemplate.class);
-        String url = String.format("%s/%s/%s/%s", externalApiUrl, "posts", "101", "comments");
+        String url = getUrl("101");
         when(mockRestTemplate.exchange(eq(url), eq(HttpMethod.GET), any(HttpEntity.class),
             any(ParameterizedTypeReference.class)))
-            .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND, "Not Found"));
+            .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND, ERR_NOT_FOUND));
 
         // Verify that the exception is correctly thrown
         AuditionIntegrationClient auditionIntegrationClient = new AuditionIntegrationClient(mockRestTemplate);
@@ -227,7 +232,7 @@ class AuditionIntegrationClientTest {
     @Test
     public void testGetPostWithCommentsExceptionScenarioOtherThan404() {
         RestTemplate mockRestTemplate = mock(RestTemplate.class);
-        String url = String.format("%s/%s/%s/%s", externalApiUrl, "posts", "101", "comments");
+        String url = getUrl("104");
         when(mockRestTemplate.exchange(eq(url), eq(HttpMethod.GET), any(HttpEntity.class),
             any(ParameterizedTypeReference.class)))
             .thenThrow(new HttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"));
@@ -236,7 +241,7 @@ class AuditionIntegrationClientTest {
         AuditionIntegrationClient auditionIntegrationClient = new AuditionIntegrationClient(mockRestTemplate);
         auditionIntegrationClient.setExternalApiUrl(externalApiUrl);
         SystemException systemException = assertThrows(SystemException.class,
-            () -> auditionIntegrationClient.getPostWithComments("101"));
+            () -> auditionIntegrationClient.getPostWithComments("104"));
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), systemException.getStatusCode());
     }
 
@@ -246,34 +251,34 @@ class AuditionIntegrationClientTest {
     @Test
     public void testGetPostComments() {
         MockRestServiceServer mockServer = MockRestServiceServer.createServer(restTemplate);
-        String postId = "100";
+        String postId = "103";
         mockServer.expect(ExpectedCount.once(),
-                requestTo(String.format("%s/%s/%s/%s", externalApiUrl, "posts", postId, "comments")))
+                requestTo(getUrl(postId)))
             .andRespond(withSuccess(
-                "[\n"
-                    + "        {\n"
-                    + "            \"postId\": 100,\n"
-                    + "            \"id\": 1,\n"
-                    + "            \"name\": \"id labore ex et quam laborum\",\n"
-                    + "            \"email\": \"Eliseo@gardner.biz\",\n"
-                    + "            \"body\": \"laudantium enim quasi est quidem magnam voluptate ipsam eos\\ntempora quo necessitatibus\\ndolor quam autem quasi\\nreiciendis et nam sapiente accusantium\"\n"
-                    + "        },\n"
-                    + "        {\n"
-                    + "            \"postId\": 100,\n"
-                    + "            \"id\": 2,\n"
-                    + "            \"name\": \"quo vero reiciendis velit similique earum\",\n"
-                    + "            \"email\": \"Jayne_Kuhic@sydney.com\",\n"
-                    + "            \"body\": \"est natus enim nihil est dolore omnis voluptatem numquam\\net omnis occaecati quod ullam at\\nvoluptatem error expedita pariatur\\nnihil sint nostrum voluptatem reiciendis et\"\n"
-                    + "        }\n"
+                "["
+                    + "        {"
+                    + "            \"postId\": 103,"
+                    + "            \"id\": 1,"
+                    + "            \"name\": \"id labore ex et quam laborum\","
+                    + "            \"email\": \"Eliseo@gardner.biz\","
+                    + "            \"body\": \"laudantium enim quasi est quidem magnamautem quasieiciendis et nam sapiente accusantium\""
+                    + "        },"
+                    + "        {"
+                    + "            \"postId\": 103,"
+                    + "            \"id\": 2,"
+                    + "            \"name\": \"quo vero reiciendis velit similique earum\","
+                    + "            \"email\": \"Jayne_Kuhic@sydney.com\","
+                    + "            \"body\": \"est natus enim nihil est dolore omnis voluptatem numquamet omnis occaecati uptatem reiciendis et\""
+                    + "        }"
                     + "    ]",
                 MediaType.APPLICATION_JSON));
 
-        List<Comment> comments = auditionIntegrationClient.getPostComments("100");
+        List<Comment> comments = auditionIntegrationClient.getPostComments("103");
         mockServer.verify();
 
         assertEquals(2, comments.size());
-        assertEquals(100, comments.get(0).getPostId());
-        assertEquals(100, comments.get(1).getPostId());
+        assertEquals(103, comments.get(0).getPostId());
+        assertEquals(103, comments.get(1).getPostId());
         assertEquals(1, comments.get(0).getId());
         assertEquals(2, comments.get(1).getId());
         mockServer.reset();
@@ -285,16 +290,16 @@ class AuditionIntegrationClientTest {
     @Test
     public void testGetPostCommentsExceptionScenario404() {
         RestTemplate mockRestTemplate = mock(RestTemplate.class);
-        String url = String.format("%s/%s/%s/%s", externalApiUrl, "posts", "101", "comments");
+        String url = getUrl("111");
         when(mockRestTemplate.exchange(eq(url), eq(HttpMethod.GET), any(HttpEntity.class),
             any(ParameterizedTypeReference.class)))
-            .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND, "Not Found"));
+            .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND, ERR_NOT_FOUND));
 
         // Verify that the exception is correctly thrown
         AuditionIntegrationClient auditionIntegrationClient = new AuditionIntegrationClient(mockRestTemplate);
         auditionIntegrationClient.setExternalApiUrl(externalApiUrl);
         SystemException systemException = assertThrows(SystemException.class,
-            () -> auditionIntegrationClient.getPostComments("101"));
+            () -> auditionIntegrationClient.getPostComments("111"));
         assertEquals(HttpStatus.NOT_FOUND.value(), systemException.getStatusCode());
 
     }
@@ -305,16 +310,20 @@ Test the external API call for Get Comments Other than 404 HttpClientErrorExcept
     @Test
     public void testGetPostCommentsExceptionScenarioOther() {
         RestTemplate mockRestTemplate = mock(RestTemplate.class);
-        String url = String.format("%s/%s/%s/%s", externalApiUrl, "posts", "101", "comments");
+        String url = getUrl("102");
         when(mockRestTemplate.exchange(eq(url), eq(HttpMethod.GET), any(HttpEntity.class),
             any(ParameterizedTypeReference.class)))
-            .thenThrow(new HttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Not Found"));
+            .thenThrow(new HttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR, ERR_NOT_FOUND));
 
         // Verify that the exception is correctly thrown
         AuditionIntegrationClient auditionIntegrationClient = new AuditionIntegrationClient(mockRestTemplate);
         auditionIntegrationClient.setExternalApiUrl(externalApiUrl);
         SystemException systemException = assertThrows(SystemException.class,
-            () -> auditionIntegrationClient.getPostComments("101"));
+            () -> auditionIntegrationClient.getPostComments("102"));
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), systemException.getStatusCode());
+    }
+
+    private String getUrl(String postId) {
+        return String.format("%s/%s/%s/%s", externalApiUrl, RESOURCE_POST, postId, RESOURCE_COMMENT);
     }
 }

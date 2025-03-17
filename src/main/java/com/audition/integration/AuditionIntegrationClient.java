@@ -3,6 +3,7 @@ package com.audition.integration;
 import com.audition.common.exception.SystemException;
 import com.audition.model.AuditionPost;
 import com.audition.model.Comment;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.micrometer.tracing.annotation.NewSpan;
 import java.util.List;
 import lombok.Setter;
@@ -20,18 +21,18 @@ import org.springframework.web.client.RestTemplate;
 
 @Component
 @EnableConfigurationProperties
-
 public class AuditionIntegrationClient {
 
-    //@Autowired
     private RestTemplate restTemplate;
+    private final static String RESOURCE_POST = "posts";
 
+    @SuppressFBWarnings
     public AuditionIntegrationClient(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
     @Value("${spring.application.externalApiUrl}")
-    @Setter
+    @Setter(onMethod_ = @SuppressFBWarnings({"EI_EXPOSE_REP2", "EI_EXPOSE_REP"}))
     private String externalApiUrl;
 
     @NewSpan("Invoke external api endpoint /posts")
@@ -40,7 +41,7 @@ public class AuditionIntegrationClient {
         try {
 
             ResponseEntity<List<AuditionPost>> auditionResponse =
-                restTemplate.exchange(String.format("%s/%s", externalApiUrl, "posts"),
+                restTemplate.exchange(String.format("%s/%s", externalApiUrl, RESOURCE_POST),
                     HttpMethod.GET, getEntityWithHeaders(), new ParameterizedTypeReference<List<AuditionPost>>() {
                     });
             List<AuditionPost> auditionList = auditionResponse.getBody();
@@ -55,7 +56,8 @@ public class AuditionIntegrationClient {
         // TODO-Resolved get post by post ID call from https://jsonplaceholder.typicode.com/posts/
         try {
             ResponseEntity<AuditionPost> auditionPostEntity =
-                restTemplate.getForEntity(String.format("%s/%s/%s", externalApiUrl, "posts", id), AuditionPost.class);
+                restTemplate.getForEntity(String.format("%s/%s/%s", externalApiUrl, RESOURCE_POST, id),
+                    AuditionPost.class);
             return auditionPostEntity.getBody();
         } catch (final HttpClientErrorException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
@@ -73,7 +75,7 @@ public class AuditionIntegrationClient {
         // TODO-Resolved get post by post ID call from https://jsonplaceholder.typicode.com/posts/
         try {
             ResponseEntity<List<Comment>> postCommentsResponse =
-                restTemplate.exchange(String.format("%s/%s/%s/%s", externalApiUrl, "posts", postId, "comments"),
+                restTemplate.exchange(String.format("%s/%s/%s/%s", externalApiUrl, RESOURCE_POST, postId, "comments"),
                     HttpMethod.GET, getEntityWithHeaders(), new ParameterizedTypeReference<>() {
                     });
             AuditionPost auditionPost = getPostById(postId);
@@ -97,7 +99,7 @@ public class AuditionIntegrationClient {
         // TODO-Resolved get post by post ID call from https://jsonplaceholder.typicode.com/posts/
         try {
             ResponseEntity<List<Comment>> postCommentsResponse =
-                restTemplate.exchange(String.format("%s/%s/%s/%s", externalApiUrl, "posts", postId, "comments"),
+                restTemplate.exchange(String.format("%s/%s/%s/%s", externalApiUrl, RESOURCE_POST, postId, "comments"),
                     HttpMethod.GET, getEntityWithHeaders(), new ParameterizedTypeReference<List<Comment>>() {
                     });
             return postCommentsResponse.getBody();

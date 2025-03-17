@@ -25,10 +25,12 @@ class AuditionControllerTest {
     @InjectMocks
     AuditionController auditionController;
 
+    private final static String INVALID_NUMBER = "xxxx";
+
     @Test
     void testGetPosts() {
         List<AuditionPost> auditionPosts = List.of(
-            new AuditionPost(1, 1, "Post Title", "Post Body", new ArrayList<>()));
+            new AuditionPost(1, 1, "Post Title 1", "Post Body 1", new ArrayList<>()));
         when(auditionService.getPosts()).thenReturn(auditionPosts);
         List<AuditionPost> filteredAuditionPosts = auditionController.getPosts(1, null, null, null);
         Assertions.assertEquals(1, filteredAuditionPosts.size());
@@ -37,8 +39,8 @@ class AuditionControllerTest {
     @Test
     void testGetPostsFilteringByUserId() {
         List<AuditionPost> auditionPosts = List.of(
-            new AuditionPost(1, 1, "Post Title", "Post Body", new ArrayList<>()),
-            new AuditionPost(2, 2, "Post Title", "Post Body", new ArrayList<>()));
+            new AuditionPost(1, 1, "Post Title 2", "Post Body 2", new ArrayList<>()),
+            new AuditionPost(2, 2, "Post Title 3", "Post Body 3", new ArrayList<>()));
         when(auditionService.getPosts()).thenReturn(auditionPosts);
         List<AuditionPost> filteredAuditionPosts = auditionController.getPosts(1, null, null, null);
         Assertions.assertEquals(1, filteredAuditionPosts.size());
@@ -47,8 +49,8 @@ class AuditionControllerTest {
     @Test
     void testGetPostsFilteringByPostId() {
         List<AuditionPost> auditionPosts = List.of(
-            new AuditionPost(1, 1, "Post Title", "Post Body", new ArrayList<>()),
-            new AuditionPost(2, 2, "Post Title", "Post Body", new ArrayList<>()));
+            new AuditionPost(1, 1, "Post Title 4", "Post Body 4", new ArrayList<>()),
+            new AuditionPost(2, 2, "Post Title 5", "Post Body 5", new ArrayList<>()));
         when(auditionService.getPosts()).thenReturn(auditionPosts);
         List<AuditionPost> filteredAuditionPosts = auditionController.getPosts(null, 1, null, null);
         Assertions.assertEquals(1, filteredAuditionPosts.size());
@@ -57,8 +59,8 @@ class AuditionControllerTest {
     @Test
     void testGetPostsFilteringByPostTitle() {
         List<AuditionPost> auditionPosts = List.of(
-            new AuditionPost(1, 1, "Post Title AAA", "Post Body", new ArrayList<>()),
-            new AuditionPost(2, 2, "Post Title BBB", "Post Body", new ArrayList<>()));
+            new AuditionPost(1, 1, "Post Title AAA", "Post Body A", new ArrayList<>()),
+            new AuditionPost(2, 2, "Post Title BBB", "Post Body B", new ArrayList<>()));
         when(auditionService.getPosts()).thenReturn(auditionPosts);
         List<AuditionPost> filteredAuditionPosts = auditionController.getPosts(null, null, "AAA", null);
         Assertions.assertEquals(1, filteredAuditionPosts.size());
@@ -67,8 +69,8 @@ class AuditionControllerTest {
     @Test
     void testGetPostsFilteringByPostBody() {
         List<AuditionPost> auditionPosts = List.of(
-            new AuditionPost(1, 1, "Post Title AAA", "Post Body AAA", new ArrayList<>()),
-            new AuditionPost(2, 2, "Post Title BBB", "Post Body BBB", new ArrayList<>()));
+            new AuditionPost(1, 1, "Post Title A", "Post Body AAA", new ArrayList<>()),
+            new AuditionPost(2, 2, "Post Title B", "Post Body BBB", new ArrayList<>()));
         when(auditionService.getPosts()).thenReturn(auditionPosts);
         List<AuditionPost> filteredAuditionPosts = auditionController.getPosts(null, null, null, "BBB");
         Assertions.assertEquals(1, filteredAuditionPosts.size());
@@ -77,49 +79,48 @@ class AuditionControllerTest {
     @Test
     void testGetPostsFilteringByPostCombined() {
         List<AuditionPost> auditionPosts = List.of(
-            new AuditionPost(1, 1, "Post Title AAA", "Post Body AAA", new ArrayList<>()),
-            new AuditionPost(11, 1, "Post Title", "Post Body AAA", new ArrayList<>()),
-            new AuditionPost(1, 12, "Post Title", "Post Body AAA", new ArrayList<>()),
-            new AuditionPost(1, 12, "Post Title", "Post Body", new ArrayList<>()),
-            new AuditionPost(2, 2, "Post Title BBB", "Post Body BBB", new ArrayList<>()));
+            new AuditionPost(1, 1, "Post Title AAAA", "Post Body BBBB", new ArrayList<>()),
+            new AuditionPost(11, 1, "Post Title 11", "Post Body 11", new ArrayList<>()),
+            new AuditionPost(12, 12, "Post Title 12", "Post Body 12", new ArrayList<>()),
+            new AuditionPost(13, 13, "Post Title 13", "Post Body 13", new ArrayList<>()),
+            new AuditionPost(14, 14, "Post Title 14", "Post Body 14", new ArrayList<>()));
 
         when(auditionService.getPosts()).thenReturn(auditionPosts);
-        List<AuditionPost> filteredAuditionPosts = auditionController.getPosts(1, 1, "AAA", "AAA");
+        List<AuditionPost> filteredAuditionPosts = auditionController.getPosts(1, 1, "AAAA", "BBBB");
         Assertions.assertEquals(1, filteredAuditionPosts.size());
     }
 
     @Test
     void testGetPost() {
-        AuditionPost auditionPost = new AuditionPost(1, 1, "Post Title", "Post Body", new ArrayList<>());
+        AuditionPost auditionPost = new AuditionPost(1, 1, "Post Title 15", "Post Body 15", new ArrayList<>());
         when(auditionService.getPostById("1")).thenReturn(auditionPost);
         AuditionPost resultAuditionPost = auditionController.getPost("1");
         Assertions.assertEquals(1, resultAuditionPost.getId());
         Assertions.assertEquals(1, resultAuditionPost.getUserId());
-        Assertions.assertEquals("Post Title", resultAuditionPost.getTitle());
-        Assertions.assertEquals("Post Body", resultAuditionPost.getBody());
+        Assertions.assertEquals("Post Title 15", resultAuditionPost.getTitle());
+        Assertions.assertEquals("Post Body 15", resultAuditionPost.getBody());
     }
 
     @Test
     void testGetPostExceptionScenario() {
-        AuditionPost auditionPost = new AuditionPost(1, 1, "Post Title", "Post Body", new ArrayList<>());
         when(auditionService.getPostById(anyString())).thenThrow(
-            new SystemException(String.format("Invalid postId: %s", auditionPost.getId())));
+            new SystemException(String.format("Invalid postId: %s", INVALID_NUMBER)));
         SystemException systemException = assertThrows(SystemException.class,
-            () -> auditionController.getPost("xxxxx"));
-        Assertions.assertEquals("Invalid postId: xxxxx, Invalid number For input string: \"xxxxx\"",
+            () -> auditionController.getPost(INVALID_NUMBER));
+        Assertions.assertEquals("Invalid postId: xxxx, Invalid number For input string: \"xxxx\"",
             systemException.getMessage());
     }
 
     @Test
     void getPostWithComments() {
-        AuditionPost auditionPost = new AuditionPost(1, 1, "Post Title", "Post Body",
+        AuditionPost auditionPost = new AuditionPost(1, 1, "Post Title 16", "Post Body 16",
             List.of(new Comment(1, 1, "name", "email.@email.com", "body")));
         when(auditionService.getPostWithComments("1")).thenReturn(auditionPost);
         AuditionPost resultAuditionPost = auditionController.getPostWithComments("1");
         Assertions.assertEquals(1, resultAuditionPost.getId());
         Assertions.assertEquals(1, resultAuditionPost.getUserId());
-        Assertions.assertEquals("Post Title", resultAuditionPost.getTitle());
-        Assertions.assertEquals("Post Body", resultAuditionPost.getBody());
+        Assertions.assertEquals("Post Title 16", resultAuditionPost.getTitle());
+        Assertions.assertEquals("Post Body 16", resultAuditionPost.getBody());
         //Comment Veririfcations
         Assertions.assertEquals(1, resultAuditionPost.getComments().size());
         Assertions.assertEquals("name", resultAuditionPost.getComments().get(0).getName());
@@ -130,10 +131,10 @@ class AuditionControllerTest {
     @Test
     void testGetPostWithCommentsExceptionScenario() {
         when(auditionService.getPostWithComments(anyString())).thenThrow(
-            new SystemException(String.format("Invalid postId: %s", "xxxxx")));
+            new SystemException(String.format("Invalid postId: %s", INVALID_NUMBER)));
         SystemException systemException = assertThrows(SystemException.class,
-            () -> auditionController.getPostWithComments("xxxxx"));
-        Assertions.assertEquals("Invalid postId: xxxxx, Invalid number For input string: \"xxxxx\"",
+            () -> auditionController.getPostWithComments(INVALID_NUMBER));
+        Assertions.assertEquals("Invalid postId: xxxx, Invalid number For input string: \"xxxx\"",
             systemException.getMessage());
     }
 
@@ -152,11 +153,11 @@ class AuditionControllerTest {
     @Test
     void testGetPostCommentsExceptionScenario() {
         when(auditionService.getPostComments(anyString())).thenThrow(
-            new SystemException(String.format("Invalid postId: %s", "xxxxx")));
+            new SystemException(String.format("Invalid postId: %s", INVALID_NUMBER)));
 
         SystemException systemException = assertThrows(SystemException.class,
-            () -> auditionController.getPostComments("xxxxx"));
-        Assertions.assertEquals("Invalid postId: xxxxx, Invalid number For input string: \"xxxxx\"",
+            () -> auditionController.getPostComments(INVALID_NUMBER));
+        Assertions.assertEquals("Invalid postId: xxxx, Invalid number For input string: \"xxxx\"",
             systemException.getMessage());
     }
 }

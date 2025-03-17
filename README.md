@@ -22,6 +22,7 @@ This is new ReadMe file. The original file has been kept in ReadMe_Original.md f
 1. TDD approach.
 2. 100% code coverage for Integration and Web layers.
 3. Upgrading dependencies versions is out of scope.
+4. Fully compilable and working application
 
 # References
 
